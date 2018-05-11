@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>fly brid</title>
+	<style></style>
+	<script type="text/javascript">
+		var ctx;
+		var time;
+		var dis=150;
+		var speed=8;    //小鸟的速度
+		var index=0;
+		var score=0;
+		var flag=true;
+		var bg=new Background(0, 0 ,400, 600 ,"images/bg.png");
+		var ground=new Background(0, 550 ,400, 200 ,"images/ground.png");
+		var up=new up_pipe(400,0,100,200,"images/pipe.png");
+		var down=new down_pipe(400,350,100,200,"images/pipe.png");
+		var img_srcs=["images/0.gif","images/1.gif","images/2.gif"];
+		var brid=new drawbrid(100,300,40,40,img_srcs);
+		
+		//背景构造函数  对象作用把自己绘制到画布上
+		function Background(x,y,width,height,img_src){   
+			this.bgx=x;
+			this.bgy=y;
+			this.bgwidth=width;
+			this.bgheight=height;
+			var image=new Image();
+			image.src=img_src;
+			this.img=image;
+			//把自己绘制到画布上
+			this.drawbg=function(){
+				ctx.drawImage(this.img,this.bgx,this.bgy,this.bgwidth,this.bgheight);
+			}
+		}
+
+		//上柱子构造函数  对象作用把自己绘制到画布上
+		function up_pipe(x,y,width,height,img_src){   
+			this.upx=x;
+			this.upy=y;
+			this.upwidth=width;
+			this.upheight=height;
+			var image=new Image();
+			image.src=img_src;
+			this.img=image;
+			//把自己绘制到画布上
+			this.drawup=function(){
+				ctx.drawImage(this.img,158,500,150,804,this.upx,this.upy,this.upwidth,this.upheight);
+			}
+		}
+
+
+		//下柱子构造函数  对象作用把自己绘制到画布上
+		function down_pipe(x,y,width,height,img_src){   
+			this.downx=x;
+			this.downy=y;
+			this.downwidth=width;
+			this.downheight=height;
+			var image=new Image();
+			image.src=img_src;
+			this.img=image;
+			//把自己绘制到画布上
+			this.drawdown=function(){
+				ctx.drawImage(image,8,476,150,800,this.downx,this.downy,this.downwidth,this.downheight);
+			}
+		}
+
+		//小鸟构造函数  对象作用把自己绘制到画布上
+		function drawbrid(x,y,width,height,img_src){   
+			this.bridx=x;
+			this.bridy=y;
+			this.bridwidth=width;
+			this.bridheight=height;
+			//把自己绘制到画布上
+			this.drawBrid=function(){
+				var image=new Image();
+				image.src=img_srcs[index%3];  //切换小鸟运动的图片
+				index++;
+				ctx.drawImage(image,this.bridx,this.bridy,this.bridwidth,this.bridheight);
+			}
+		}
+
+		function judge(){
+			//修改角色属性   
+			brid.bridy+=speed;   //修改小鸟的速度  匀速下落
+			//循环柱子
+			if(up.upx<-up.upwidth){
+				//从右边出现
+				up.upx=400;
+				down.downx=400;
+				flag=true;
+				//高度变化
+				up.upheight=Math.round(Math.random()*200)+100;
+				down.downheight=400-up.upheight;
+				down.downy=up.upheight+dis;
+			}
+			up.upx-=speed;
+			down.downx-=speed;
+			if(flag&&brid.bridx>=up.upx+up.upwidth){
+				score++;
+				flag=false;
+			}
+			ctx.fillStyle="#fff";
+			ctx.font="30px '宋体' ";
+			ctx.fillText(score,100,100);
+			//判断游戏结束  碰撞  关闭定时器  绘制提示
+			if((brid.bridy<=0)||(brid.bridy+brid.bridheight>=550)){ 
+				clearInterval(time);   //超出上下线  游戏结束
+			}
+			//小鸟撞击到柱子 游戏结束
+			if((brid.bridx+brid.bridwidth>up.upx)&&
+			(brid.bridx+brid.bridwidth<up.upx+up.upwidth+brid.bridwidth)&&
+			(brid.bridy<up.upheight||(brid.bridy+brid.bridheight>up.upheight+dis))){
+				clearInterval(time);	
+			}
+		}
+
+		function drawall(){
+			ctx.clearRect(0,0,400,600);
+			//绘制所有角色  层级关系   绘制顺序
+			bg.drawbg();
+			ground.drawbg();
+			//star.drawstar();
+			up.drawup();
+			down.drawdown();
+			brid.drawBrid();
+			judge();
+		}
+
+		function keyup(e){
+			if(e.keyCode==32){
+				brid.bridy-=50;
+			}	
+		}
+		
+		function init(){   //game开始  main函数
+			ctx=document.getElementById('canvas').getContext('2d');
+			//玩家控制游戏
+			document.onkeyup=keyup;
+			drawall();
+			time=setInterval(drawall,100);
+		}
+		
+	</script>
+</head>
+<body onload="init()">
+	<canvas id="canvas" width="400" height="600" style="margin:20px 0 0 500px;background: pink"></canvas>
+</body>
+</html> 
